@@ -8,12 +8,14 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Mono
+import com.google.cloud.ServiceOptions;
+
 
 @SpringBootApplication
 class KotlinApplication {
-
     @Bean
     fun routes() = router {
+
         GET {
             ServerResponse.ok().body(Mono.just("Let the battle begin! From GH"))
         }
@@ -24,7 +26,7 @@ class KotlinApplication {
                 val myUrl = arenaUpdate._links.self.href
                 val myself = arenaUpdate.arena.state[myUrl]!!
                 val (sizeX, sizeY) = arenaUpdate.arena.dims
-
+                writeCommittedStream.send(arenaUpdate.arena)
 
                 val shouldThrow = arenaUpdate.arena.state.filter { (href, state) ->
                     val xdiff = myself.x - state.x
@@ -37,7 +39,6 @@ class KotlinApplication {
                         else -> ydiff == 0 && xdiff < 0 && xdiff >= -3
                     } && href != myUrl
                 }
-
                 ServerResponse.ok().body(
                     if (!shouldThrow.isEmpty() && !myself.wasHit) {
                         Mono.just("T")
@@ -59,6 +60,11 @@ class KotlinApplication {
             }
         }
     }
+
+    companion object {
+        val writeCommittedStream =
+            WriteCommittedStream(ServiceOptions.getDefaultProjectId(), "snowball", "events");
+    }
 }
 
 fun main(args: Array<String>) {
@@ -70,3 +76,4 @@ data class PlayerState(val x: Int, val y: Int, val direction: String, val score:
 data class Links(val self: Self)
 data class Self(val href: String)
 data class Arena(val dims: List<Int>, val state: Map<String, PlayerState>)
+
