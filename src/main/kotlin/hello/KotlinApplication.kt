@@ -23,7 +23,7 @@ class KotlinApplication {
                 println(arenaUpdate)
                 val myUrl = arenaUpdate._links.self.href
                 val myself = arenaUpdate.arena.state[myUrl]!!
-
+                val (sizeX, sizeY) = arenaUpdate.arena.dims
 
 
                 val shouldThrow = arenaUpdate.arena.state.filter { (href, state) ->
@@ -34,15 +34,28 @@ class KotlinApplication {
                         "N" -> xdiff == 0 && ydiff > 0 && ydiff <= 3
                         "S" -> xdiff == 0 && ydiff < 0 && ydiff >= -3
                         "W" -> ydiff == 0 && xdiff > 0 && xdiff <= 3
-                         else -> ydiff == 0 && xdiff < 0 && xdiff >= -3
+                        else -> ydiff == 0 && xdiff < 0 && xdiff >= -3
                     } && href != myUrl
                 }
 
-                ServerResponse.ok().body(if(!shouldThrow.isEmpty() && !myself.wasHit) {
-                    Mono.just("T")
-                } else{
-                    Mono.just(listOf("F", "F" , "R", "L").random())
-                })
+                ServerResponse.ok().body(
+                    if (!shouldThrow.isEmpty() && !myself.wasHit) {
+                        Mono.just("T")
+                    } else {
+                        when {
+                            myself.x == sizeX - 1 && myself.direction == "E" -> Mono.just("R")
+                            myself.x == sizeX - 1 && myself.direction == "N" -> Mono.just("L")
+                            myself.x == 0 && myself.direction == "W" -> Mono.just("R")
+                            myself.x == 0 && myself.direction == "N" -> Mono.just("R")
+                            myself.y == 0 && myself.direction == "E" -> Mono.just("R")
+                            myself.y == 0 && myself.direction == "W" -> Mono.just("L")
+                            myself.y == sizeY - 1 && myself.direction == "S" -> Mono.just("R")
+                            myself.y == sizeY - 1 && myself.direction == "W" -> Mono.just("R")
+                            myself.y == sizeY - 1 && myself.direction == "E" -> Mono.just("L")
+                            else -> Mono.just(listOf("F", "F", "R", "L").random())
+                        }
+                    }
+                )
             }
         }
     }
