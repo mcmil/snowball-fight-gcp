@@ -15,7 +15,7 @@ class KotlinApplication {
     @Bean
     fun routes() = router {
         GET {
-            ServerResponse.ok().body(Mono.just("Let the battle begin!"))
+            ServerResponse.ok().body(Mono.just("Let the battle begin! From GH"))
         }
 
         POST("/**", accept(APPLICATION_JSON)) { request ->
@@ -38,11 +38,10 @@ class KotlinApplication {
                     } && href != myUrl
                 }
 
-
                 ServerResponse.ok().body(if(!shouldThrow.isEmpty() && !myself.wasHit) {
                     Mono.just("T")
                 } else{
-                    Mono.just(listOf("F", "R", "L").random())
+                    Mono.just(listOf("F", "F" , "R", "L").random())
                 })
             }
         }
