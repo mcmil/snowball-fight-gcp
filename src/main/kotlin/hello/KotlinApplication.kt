@@ -9,7 +9,8 @@ import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Mono
 import com.google.cloud.ServiceOptions;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SpringBootApplication
 class KotlinApplication {
@@ -22,7 +23,7 @@ class KotlinApplication {
 
         POST("/**", accept(APPLICATION_JSON)) { request ->
             request.bodyToMono(ArenaUpdate::class.java).flatMap { arenaUpdate ->
-                println(arenaUpdate)
+                log.info(arenaUpdate.toString())
                 val myUrl = arenaUpdate._links.self.href
                 val myself = arenaUpdate.arena.state[myUrl]!!
                 val (sizeX, sizeY) = arenaUpdate.arena.dims
@@ -62,6 +63,7 @@ class KotlinApplication {
     }
 
     companion object {
+        val log = LoggerFactory.getLogger("pl.snowapp")
         val writeCommittedStream =
             WriteCommittedStream(ServiceOptions.getDefaultProjectId(), "snowball", "events");
     }
